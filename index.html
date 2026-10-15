@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScriptHub — direktori script dari lama ke terbaru</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=JetBrains+Mono&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer glass" id="drawer" aria-label="Menu" aria-hidden="true">
+    <div class="drawer-head">
+      <strong id="drawerBrand">ScriptHub</strong>
+      <button class="icon-btn plain" id="drawerClose" aria-label="Tutup menu"><svg class="ic" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <nav id="nav"></nav>
+    <div class="drawer-foot" id="drawerFoot"></div>
+  </aside>
+
+  <div class="wrap">
+    <header class="topbar glass">
+      <button class="icon-btn" id="menuBtn" aria-label="Buka menu" aria-controls="drawer" aria-expanded="false"><span></span><span></span><span></span></button>
+      <strong class="brand" id="brand">ScriptHub</strong>
+      <span id="viewTitle"></span>
+    </header>
+
+    <main>
+      <!-- BERANDA -->
+      <section data-view="home">
+        <h1>Cari script dari yang paling lama sampai yang terbaru.</h1>
+        <p class="lead">Urutkan menurut tanggal, filter per game, simpan favorit, dan salin script dengan sekali klik.</p>
+        <div class="search glass">
+          <input id="q" type="search" placeholder="Cari judul, game, tag, atau penulis" aria-label="Cari script" autocomplete="off">
+        </div>
+        <div class="toolbar">
+          <div class="chips" id="chips" role="group" aria-label="Filter game"></div>
+          <div class="seg" role="group" aria-label="Urutan">
+            <button data-sort="oldest" aria-pressed="false">Terlama</button>
+            <button data-sort="newest" aria-pressed="true">Terbaru</button>
+          </div>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="more"><button class="btn" id="more" hidden>Tampilkan lebih banyak</button></div>
+      </section>
+
+      <!-- FAVORIT -->
+      <section data-view="fav" hidden>
+        <div class="view-head"><h2>Favorit</h2></div>
+        <div class="grid" id="favGrid"></div>
+      </section>
+
+      <!-- RIWAYAT -->
+      <section data-view="recent" hidden>
+        <div class="view-head"><h2>Terakhir dilihat</h2><button class="btn" id="clearRecent">Hapus riwayat</button></div>
+        <div class="grid" id="recentGrid"></div>
+      </section>
+
+      <!-- STATISTIK -->
+      <section data-view="stats" hidden>
+        <div class="view-head"><h2>Statistik</h2></div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="panel glass"><h2>Script per game</h2><div id="gameBars"></div></div>
+      </section>
+
+      <!-- ADMIN -->
+      <section data-view="admin" hidden>
+        <div class="panel glass" id="loginBox" style="max-width:480px">
+          <h2>Masuk admin</h2>
+          <form id="loginForm" class="fields" style="grid-template-columns:1fr">
+            <label>Password<input type="password" id="pw" required autocomplete="current-password"></label>
+            <div><button class="btn primary" type="submit">Masuk</button></div>
+          </form>
+        </div>
+
+        <div id="adminBox" hidden>
+          <div class="view-head"><h2>Panel admin</h2><button class="btn" id="logout">Keluar</button></div>
+          <div class="tabs" id="adminTabs" role="group" aria-label="Bagian admin">
+            <button data-tab="add" aria-pressed="true">Tambah</button>
+            <button data-tab="manage" aria-pressed="false">Kelola</button>
+            <button data-tab="io" aria-pressed="false">Impor / Ekspor</button>
+            <button data-tab="feed" aria-pressed="false">Feed otomatis</button>
+          </div>
+
+          <div class="panel glass" data-tab="add">
+            <h2>Tambah script</h2>
+            <form id="addForm" class="fields">
+              <label>Judul<input name="title" required maxlength="120"></label>
+              <label>Game<input name="game" maxlength="80" placeholder="Umum"></label>
+              <label>Penulis<input name="author" maxlength="60"></label>
+              <label>Tanggal rilis<input name="createdAt" type="date"></label>
+              <label class="full">Deskripsi<input name="description" maxlength="400"></label>
+              <label class="full">Tag (pisahkan dengan koma)<input name="tags" placeholder="gui, farm, teleport"></label>
+              <label class="full">Kode script<textarea name="code" required></textarea></label>
+              <div class="full"><button class="btn primary" type="submit">Simpan script</button></div>
+            </form>
+          </div>
+
+          <div class="panel glass" data-tab="manage" hidden>
+            <h2>Kelola script</h2>
+            <label style="margin-bottom:12px">Cari<input id="manageQ" placeholder="Filter daftar"></label>
+            <div id="manageList"></div>
+          </div>
+
+          <div class="panel glass" data-tab="io" hidden>
+            <h2>Impor / Ekspor</h2>
+            <p class="hint">Script yang kamu tambah atau impor tersimpan di browser ini saja. Agar tampil untuk semua pengunjung, unduh <code>scripts-data.js</code> lalu ganti file <code>data/scripts-data.js</code> di hosting.</p>
+            <div class="btn-row">
+              <button class="btn primary" id="expJs">Unduh scripts-data.js</button>
+              <button class="btn" id="expJson">Unduh JSON</button>
+            </div>
+            <h2 style="margin-top:28px">Impor dari file JSON</h2>
+            <input type="file" id="impFile" accept=".json,application/json">
+            <h2 style="margin-top:28px">Impor dari URL</h2>
+            <div class="btn-row" style="margin-top:0">
+              <input id="impUrl" type="url" placeholder="https://.../scripts.json" style="flex:1;min-width:220px">
+              <button class="btn" id="impUrlBtn">Impor</button>
+            </div>
+            <h2 style="margin-top:28px">Reset</h2>
+            <p class="hint">Menghapus semua tambahan, impor, dan penghapusan di browser ini. Data bawaan dari file tetap ada.</p>
+            <button class="btn danger" id="resetLocal">Reset data lokal</button>
+          </div>
+
+          <div class="panel glass" data-tab="feed" hidden>
+            <h2>Feed otomatis</h2>
+            <p class="hint">Feed diatur di <code>config.js</code> (bagian <code>FEEDS</code>). Situs mengeceknya sendiri saat dibuka, sesuai jeda yang diatur.</p>
+            <div id="feedList"></div>
+            <div class="btn-row"><button class="btn primary" id="runFeeds">Jalankan impor sekarang</button></div>
+            <p class="hint" id="feedLast" style="margin-top:14px"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PENGATURAN -->
+      <section data-view="settings" hidden>
+        <div class="view-head"><h2>Pengaturan</h2></div>
+        <div class="panel glass">
+          <div class="setting-row"><div>Mode hemat blur<small>Matikan efek blur kaca agar ringan di HP lama.</small></div><input type="checkbox" class="sw" id="setLite" role="switch" aria-label="Mode hemat blur"></div>
+          <div class="setting-row"><div>Bungkus baris kode<small>Baris panjang turun ke bawah, tanpa geser samping.</small></div><input type="checkbox" class="sw" id="setWrap" role="switch" aria-label="Bungkus baris kode"></div>
+          <div class="setting-row"><div>Ukuran huruf kode<small id="sizeLabel"></small></div><input type="range" id="setSize" min="11" max="22" step="1" aria-label="Ukuran huruf kode"></div>
+          <div class="setting-row"><div>Hapus favorit dan riwayat<small>Hanya di browser ini.</small></div><button class="btn danger" id="clearUser">Hapus</button></div>
+        </div>
+      </section>
+
+      <!-- TENTANG -->
+      <section data-view="about" hidden>
+        <div class="view-head"><h2>Tentang &amp; keamanan</h2></div>
+        <div class="panel glass">
+          <p>ScriptHub adalah direktori script. Semua kode hanya ditampilkan sebagai teks dan tidak pernah dijalankan oleh situs ini.</p>
+          <p>Script dari sumber yang tidak dikenal bisa berisi malware atau pencuri akun. Baca kodenya sebelum dipakai, dan gunakan hanya di tempat yang mengizinkannya.</p>
+          <p>Favorit, riwayat, dan pengaturan disimpan di browser kamu sendiri dan tidak dikirim ke mana pun.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <h2 id="mTitle"></h2>
+      <div class="meta"><span class="game" id="mGame"></span><span id="mDate"></span></div>
+      <p id="mDesc" style="color:var(--ink-dim)"></p>
+      <div class="tags" id="mTags"></div>
+      <pre class="code" id="mCode"></pre>
+      <div class="notice">Periksa kode ini sebelum dipakai. Situs ini tidak menjamin keamanannya.</div>
+      <div class="row">
+        <button class="btn primary" id="copy">Salin script</button>
+        <button class="btn" id="dl">Unduh .txt</button>
+        <button class="btn" id="mFav" aria-pressed="false">Tambah favorit</button>
+        <button class="btn" id="close">Tutup</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast glass" id="toast" role="status"></div>
+
+  <script src="config.js"></script>
+  <script src="data/scripts-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
